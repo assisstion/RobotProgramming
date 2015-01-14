@@ -74,12 +74,14 @@ void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode){
 	motor[rightWheel] = rightSpeed;
 
 
-	while((mode != 2 || irFound(irRegion) != 1) && -1*nMotorEncoder[leftWheel] < distance*360/wheelCircum
+	while(/*(mode != 2 || irFound(irRegion) != 1) && */-1*nMotorEncoder[leftWheel] < distance*360/wheelCircum
 		&& nMotorEncoder[rightWheel] < distance*360/wheelCircum){
-		nxtDisplayTextLine(0, "%d", nMotorEncoder[leftWheel]);
-		nxtDisplayTextLine(1, "%d", nMotorEncoder[rightWheel]);
-		nxtDisplayTextLine(2, "%d", distance);
-		nxtDisplayTextLine(3, "%d", distance*360/wheelCircum);
+		nxtDisplayTextLine(0, "%d", motor[leftWheel]);
+		nxtDisplayTextLine(1, "%d", motor[rightWheel]);
+		//nxtDisplayTextLine(0, "%d", nMotorEncoder[leftWheel]);
+		//nxtDisplayTextLine(1, "%d", nMotorEncoder[rightWheel]);
+		//nxtDisplayTextLine(2, "%d", distance);
+		//nxtDisplayTextLine(3, "%d", distance*360/wheelCircum);
 	}
 }
 
@@ -119,11 +121,11 @@ task main() {
 	*/
 	int encoder = 0;
 	int initSpeed = 100;
-	int arc = 0.6623;
+	double arc = 0.6623;
 
-	int data0[] = {100,360,100,90,15,90,10,90,100}; //distance/values of until
-	int data1[] = {initSpeed, 0, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, 0, initSpeed}; //left speed
-	int data2[] = {initSpeed, initSpeed, initSpeed*arc, 0, initSpeed, 0, initSpeed, initSpeed, initSpeed}; // right speed
+	int data0[] = {100,360,500,90,15,90,10,90,100}; //distance/values of until
+	int data1[] = {initSpeed, 				0, 		 initSpeed, initSpeed, initSpeed, initSpeed, initSpeed,         0, initSpeed}; //left speed
+	int data2[] = {initSpeed, initSpeed, initSpeed*arc,         0, initSpeed,         0, initSpeed, initSpeed, initSpeed}; // right speed
 	int data3[] = {0, 1, 2, 1, 3, 1, 0, 1, 0}; // mode, see thing on top
 
 
@@ -152,7 +154,7 @@ task main() {
 			}
 		}
 		else if(data3[i] == 2){
-			travelDistance(data1[i], data2[i], data0[i], 2);
+			travelDistance(data1[i], 8, data0[i], 2);
 		}
 		else if(data3[i] == 3){
 			travelDistance(data1[i], data2[i], data0[i], 3);
