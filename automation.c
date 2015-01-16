@@ -73,9 +73,12 @@ void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode){
 	motor[leftWheel] = -leftSpeed;
 	motor[rightWheel] = rightSpeed;
 
+	//nMotorEncoderTarget[leftWheel] = distance*360/wheelCircum;
+	//nMotorEncoderTarget[rightWheel] = distance*360/wheelCircum;
 
-	while(/*(mode != 2 || irFound(irRegion) != 1) && */-1*nMotorEncoder[leftWheel] < distance*360/wheelCircum
-		&& nMotorEncoder[rightWheel] < distance*360/wheelCircum){
+	//while(nMotorRunState[leftWheel] != runStateIdle && nMotorRunState[rightWheel] != runStateIdle){
+	while(/*(mode != 2 || irFound(irRegion) != 1) && */-1*nMotorEncoder[leftWheel] < distance*3*360/wheelCircum - 90
+		&& nMotorEncoder[rightWheel] < distance*3*360/wheelCircum - 90){
 		nxtDisplayTextLine(0, "%d", motor[leftWheel]);
 		nxtDisplayTextLine(1, "%d", motor[rightWheel]);
 		//nxtDisplayTextLine(0, "%d", nMotorEncoder[leftWheel]);
@@ -87,7 +90,7 @@ void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode){
 
 void turn(float degrees, int speed, bool direction){
 	//true = left, false = right
-	float dist = wheelDist*3.14*degrees/180;
+	float dist = wheelDist*3.14*degrees/180 + 5;
 
 	if(direction){
 		travelDistance(0, speed, dist, false);
@@ -123,14 +126,18 @@ task main() {
 	int initSpeed = 100;
 	double arc = 0.6623;
 
-	int data0[] = {100,360,500,90,15,90,10,90,100}; //distance/values of until
+	int data0[] = {60,90,500,90,15,90,10,90,100}; //distance/values of until
 	int data1[] = {initSpeed, 				0, 		 initSpeed, initSpeed, initSpeed, initSpeed, initSpeed,         0, initSpeed}; //left speed
 	int data2[] = {initSpeed, initSpeed, initSpeed*arc,         0, initSpeed,         0, initSpeed, initSpeed, initSpeed}; // right speed
 	int data3[] = {0, 1, 2, 1, 3, 1, 0, 1, 0}; // mode, see thing on top
 
+	/*int leftSpeed
+	motor[leftWheel] = -leftSpeed;
+	motor[rightWheel] = rightSpeed;
+	wait1Msec(1000);
+	*/
 
-
-	for(int i = 0; i <=3; i++){
+	for(int i = 1; i <=1; i++){
 
 		//Start Debug
 		getJoystickSettings(joystick);
@@ -154,11 +161,17 @@ task main() {
 			}
 		}
 		else if(data3[i] == 2){
-			travelDistance(data1[i], 8, data0[i], 2);
+			travelDistance(100, 2, data0[i], 2);
 		}
 		else if(data3[i] == 3){
 			travelDistance(data1[i], data2[i], data0[i], 3);
 		}
 	}
 	nxtDisplayTextLine(0, "%d", 1);
+	nxtDisplayTextLine(1, "%d", nMotorEncoder[leftWheel]);
+	nxtDisplayTextLine(2, "%d", nMotorEncoder[rightWheel]);
+	motor[leftWheel] = 0;
+	motor[rightWheel] = 0;
+	wait1Msec(10000);
+	//1848
 }
