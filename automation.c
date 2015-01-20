@@ -1,10 +1,11 @@
 #pragma config(Hubs,  S4, HTMotor,  HTMotor,  HTMotor,  HTServo)
 #pragma config(Sensor, S1,     HTIRS2,         sensorI2CCustom)
+#pragma config(Sensor, S4,     ,               sensorI2CMuxController)
 #pragma config(Motor,  motorA,          clawFrontRight, tmotorNXT, openLoop)
 #pragma config(Motor,  motorB,          clawSide,      tmotorNXT, openLoop)
 #pragma config(Motor,  motorC,          clawFrontLeft, tmotorNXT, openLoop)
-#pragma config(Motor,  mtr_S4_C1_1,     rightWheel,    tmotorTetrix, openLoop, driveRight)
-#pragma config(Motor,  mtr_S4_C1_2,     leftWheel,     tmotorTetrix, openLoop, driveLeft)
+#pragma config(Motor,  mtr_S4_C1_1,     rightWheel,    tmotorTetrix, openLoop, driveRight, encoder)
+#pragma config(Motor,  mtr_S4_C1_2,     leftWheel,     tmotorTetrix, openLoop, driveLeft, encoder)
 #pragma config(Motor,  mtr_S4_C2_1,     pulley1,       tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S4_C2_2,     pulley2,       tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S4_C3_1,     collector1,    tmotorTetrix, openLoop)
@@ -66,19 +67,27 @@ int irFound(int value){
 	}
 }
 
-void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode){
+void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, bool trueValue){
 	nMotorEncoder[leftWheel] = 0;
 	nMotorEncoder[rightWheel] = 0;
 
 	motor[leftWheel] = -leftSpeed;
 	motor[rightWheel] = rightSpeed;
 
-	//nMotorEncoderTarget[leftWheel] = distance*360/wheelCircum;
-	//nMotorEncoderTarget[rightWheel] = distance*360/wheelCircum;
+	//nMotorEncoderTarget[leftWheel] = -distance*1120/wheelCircum;
+	//nMotorEncoderTarget[rightWheel] = distance*1120/wheelCircum;
+
+	//motor[leftWheel] = 0;
+	//motor[rightWheel] = 0;
 
 	//while(nMotorRunState[leftWheel] != runStateIdle && nMotorRunState[rightWheel] != runStateIdle){
-	while(/*(mode != 2 || irFound(irRegion) != 1) && */-1*nMotorEncoder[leftWheel] < distance*3*360/wheelCircum - 90
-		&& nMotorEncoder[rightWheel] < distance*3*360/wheelCircum - 90){
+	float constant = 1.16;
+	if(!trueValue){
+		constant = 1120/wheelCircum;
+	}
+	if(distance >= 0){
+	while(/*(mode != 2 || irFound(irRegion) != 1) &&*/ -1*nMotorEncoder[leftWheel] < distance*constant
+		&& nMotorEncoder[rightWheel] < distance*constant){
 		nxtDisplayTextLine(0, "%d", motor[leftWheel]);
 		nxtDisplayTextLine(1, "%d", motor[rightWheel]);
 		//nxtDisplayTextLine(0, "%d", nMotorEncoder[leftWheel]);
@@ -86,16 +95,28 @@ void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode){
 		//nxtDisplayTextLine(2, "%d", distance);
 		//nxtDisplayTextLine(3, "%d", distance*360/wheelCircum);
 	}
+	}
+	else{
+		while(/*(mode != 2 || irFound(irRegion) != 1) &&*/ nMotorEncoder[leftWheel] < distance*constant
+		&& -1*nMotorEncoder[rightWheel] < distance*constant){
+		nxtDisplayTextLine(0, "%d", motor[leftWheel]);
+		nxtDisplayTextLine(1, "%d", motor[rightWheel]);
+		//nxtDisplayTextLine(0, "%d", nMotorEncoder[leftWheel]);
+		//nxtDisplayTextLine(1, "%d", nMotorEncoder[rightWheel]);
+		//nxtDisplayTextLine(2, "%d", distance);
+		//nxtDisplayTextLine(3, "%d", distance*360/wheelCircum);
+	}
+	}
 }
 
 void turn(float degrees, int speed, bool direction){
 	//true = left, false = right
-	float dist = wheelDist*3.14*degrees/180 + 5;
+	float dist = 3.14*4550*degrees/1413;
 
 	if(direction){
-		travelDistance(0, speed, dist, false);
+		travelDistance(-speed, speed, dist, false, true);
 	}else{
-		travelDistance(speed, 0, dist, false);
+		travelDistance(speed, -speed, dist, false, true);
 	}
 }
 
@@ -126,10 +147,10 @@ task main() {
 	int initSpeed = 100;
 	double arc = 0.6623;
 
-	int data0[] = {60,90,500,90,15,90,10,90,100}; //distance/values of until
-	int data1[] = {initSpeed, 				0, 		 initSpeed, initSpeed, initSpeed, initSpeed, initSpeed,         0, initSpeed}; //left speed
-	int data2[] = {initSpeed, initSpeed, initSpeed*arc,         0, initSpeed,         0, initSpeed, initSpeed, initSpeed}; // right speed
-	int data3[] = {0, 1, 2, 1, 3, 1, 0, 1, 0}; // mode, see thing on top
+	int data0[] = {100,90, -25, 75,90,15,90,10,90,100}; //distance/values of until
+	int data1[] = {initSpeed, 		0, -initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed,         0, initSpeed}; //left speed
+	int data2[] = {initSpeed, initSpeed, -initSpeed, initSpeed,         0, initSpeed,         0, initSpeed, initSpeed, initSpeed}; // right speed
+	int data3[] = {0, 1, 0, 2, 1, 3, 1, 0, 1, 0}; // mode, see thing on top
 
 	/*int leftSpeed
 	motor[leftWheel] = -leftSpeed;
@@ -139,15 +160,30 @@ task main() {
 
 	for(int i = 1; i <=1; i++){
 
+	/*
+	motor[leftWheel] = 0;
+	motor[rightWheel] = 0;
+
 		//Start Debug
-		getJoystickSettings(joystick);
-		if(joy1Btn(8) == 1){
-			 break;
+		bool go = true;
+		int n = 0;
+		while(n == 0){
+			getJoystickSettings(joystick);
+			n = joy1Btn(Btn2);
+			nxtDisplayTextLine(0, "%d", n);
+			if(joy1Btn(1) == 1){
+				go = false;
+			break;
+			}
 		}
+		if(!go){
+		break;
+		}
+		*/
 		//End Debug
 
 		if(data3[i] == 0){
-			travelDistance(data1[i], data2[i], data0[i], 0);
+			travelDistance(data1[i], data2[i], data0[i], 0, false);
 		}
 		else if(data3[i] == 1){
 			if(data1[i] == 0 && data2[i] != 0){
@@ -161,10 +197,13 @@ task main() {
 			}
 		}
 		else if(data3[i] == 2){
-			travelDistance(100, 2, data0[i], 2);
+			travelDistance(data1[i], data2[i], data0[i], 2, false);
 		}
 		else if(data3[i] == 3){
-			travelDistance(data1[i], data2[i], data0[i], 3);
+			travelDistance(data1[i], data2[i], data0[i], 3, false);
+		}
+		else if(data3[i] == 4){
+			wait1Msec(1000);
 		}
 	}
 	nxtDisplayTextLine(0, "%d", 1);
