@@ -1,6 +1,5 @@
 #pragma config(Hubs,  S4, HTMotor,  HTMotor,  HTMotor,  HTServo)
-#pragma config(Sensor, S1,     HTIRS2,         sensorI2CCustom)
-#pragma config(Sensor, S4,     ,               sensorI2CMuxController)
+#pragma config(Sensor, S3,     HTIRS2,         sensorI2CCustom)
 #pragma config(Motor,  motorA,          clawFrontRight, tmotorNXT, openLoop)
 #pragma config(Motor,  motorB,          clawSide,      tmotorNXT, openLoop)
 #pragma config(Motor,  motorC,          clawFrontLeft, tmotorNXT, openLoop)
@@ -56,7 +55,7 @@ float absSqrt(float input){
 */
 int irFound(int value){
 	int _dirAC = HTIRS2readACDir(HTIRS2);
-	if (_dirAC < 0){
+	if (_dirAC <= 0){
 		return -1;
 	}
 	if(_dirAC == value){
@@ -86,7 +85,7 @@ void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, boo
 		constant = 1120/wheelCircum;
 	}
 	if(distance >= 0){
-	while(/*(mode != 2 || irFound(irRegion) != 1) &&*/ -1*nMotorEncoder[leftWheel] < distance*constant
+	while((mode != 2 || irFound(irRegion) != 1) && -1*nMotorEncoder[leftWheel] < distance*constant
 		&& nMotorEncoder[rightWheel] < distance*constant){
 		nxtDisplayTextLine(0, "%d", motor[leftWheel]);
 		nxtDisplayTextLine(1, "%d", motor[rightWheel]);
@@ -97,7 +96,7 @@ void travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, boo
 	}
 	}
 	else{
-		while(/*(mode != 2 || irFound(irRegion) != 1) &&*/ nMotorEncoder[leftWheel] < distance*constant
+		while((mode != 2 || irFound(irRegion) != 1) && nMotorEncoder[leftWheel] < distance*constant
 		&& -1*nMotorEncoder[rightWheel] < distance*constant){
 		nxtDisplayTextLine(0, "%d", motor[leftWheel]);
 		nxtDisplayTextLine(1, "%d", motor[rightWheel]);
@@ -128,6 +127,24 @@ int irRead(){
 
 
 task main() {
+	/*int acx = 0;
+	int ac1, ac2, ac3, ac4, ac5 = 0;
+	while(true){
+		HTIRS2readAllACStrength(HTIRS2, ac1, ac2, ac3, ac4, ac5);
+		nxtDisplayTextLine(0, "%d", ac1);
+		nxtDisplayTextLine(1, "%d", ac2);
+		nxtDisplayTextLine(2, "%d", ac3);
+		nxtDisplayTextLine(3, "%d", ac4);
+		nxtDisplayTextLine(4, "%d", ac5);
+		acx = HTIRS2readACDir(HTIRS2);
+		nxtDisplayTextLine(5, "%d", acx);
+		wait1Msec(1000);
+	}
+}*/
+
+//void run(){
+
+
 	/*while(true){
 		int j = irRead();
 		//writeDebugStreamLine("Int i is    : %d", j);
@@ -144,13 +161,13 @@ task main() {
 		* 3: distance sensor
 	*/
 	int encoder = 0;
-	int initSpeed = 100;
+	int initSpeed = 50;
 	double arc = 0.6623;
 
-	int data0[] = {100,90, -25, 75,90,15,90,10,90,100}; //distance/values of until
-	int data1[] = {initSpeed, 		0, -initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed,         0, initSpeed}; //left speed
-	int data2[] = {initSpeed, initSpeed, -initSpeed, initSpeed,         0, initSpeed,         0, initSpeed, initSpeed, initSpeed}; // right speed
-	int data3[] = {0, 1, 0, 2, 1, 3, 1, 0, 1, 0}; // mode, see thing on top
+	int data0[] = {50, 90, 50, 45,75,45,30,90,100,100}; //distance/values of until
+	int data1[] = {initSpeed, 		0, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed,         initSpeed, initSpeed}; //left speed
+	int data2[] = {initSpeed, initSpeed, initSpeed, 0,         initSpeed, 0,         initSpeed, 0, initSpeed, initSpeed}; // right speed
+	int data3[] = {0, 1, 2, 1, 2, 1, 2, 1, 0, 0}; // mode, see thing on top
 
 	/*int leftSpeed
 	motor[leftWheel] = -leftSpeed;
@@ -158,7 +175,7 @@ task main() {
 	wait1Msec(1000);
 	*/
 
-	for(int i = 1; i <=1; i++){
+	for(int i = 0; i <=7; i++){
 
 	/*
 	motor[leftWheel] = 0;
@@ -205,6 +222,9 @@ task main() {
 		else if(data3[i] == 4){
 			wait1Msec(1000);
 		}
+		motor[leftWheel] = 0;
+		motor[rightWheel] = 0;
+		wait1Msec(1000);
 	}
 	nxtDisplayTextLine(0, "%d", 1);
 	nxtDisplayTextLine(1, "%d", nMotorEncoder[leftWheel]);

@@ -89,7 +89,7 @@ task main() {
 		short basej1_y1 = joystick.joy1_y1;
 
 		servo[Lock] = 0;
-		servo[servo2] = 0;
+		servo[servo2] = 140;
 
 		while(true) {
 			getJoystickSettings(joystick); //poll for joystick activity
@@ -145,7 +145,7 @@ task main() {
 				motor[pulley2] = -maxSpeed;
 			}
 			else if(joy1Btn(7) == 1){
-				motor[pulley1] = -maxSpeed ;
+				motor[pulley1] = -maxSpeed;
 				motor[pulley2] = maxSpeed ;
 			}
 			else{
