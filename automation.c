@@ -141,8 +141,12 @@ task main() {
 	wait1Msec(1000);
 	}
 	}*/
-	/*	motor[irArm] = 2;
+	wait1Msec(1000);
+	motor[irArm] = 10;
+	wait1Msec(830);
+	motor[irArm] = 0;
 
+	/*
 	while(true){
 	nxtDisplayTextLine(0, "%d", nMotorEncoder[irArm]);
 	nxtDisplayTextLine(1, "%d", motor[irArm]);
@@ -175,19 +179,19 @@ task main() {
 	//double arc = 0.6623;
 
 	int data0len = 12;
-	int data0[] = {80,        -90,        40,        40,         -45,        37,       37,        45,        30,        90,        100,       100}; //distance/values of until
-	int data1[] = {initSpeed, -initSpeed, initSpeed, initSpeed,  000000000, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed}; // left speed
-	int data2[] = {initSpeed,  000000000, initSpeed, initSpeed, -initSpeed, initSpeed, initSpeed, 000000000, initSpeed, 000000000, initSpeed, initSpeed}; // right speed
-	int data3[] = {0,          1,         2,         0,          1,         2,         0,         1,         2,         1,         0,         0}; // mode, see thing on top
+	int data0[] = {80       ,        -90,        40,        40,        -45,        37,        37,        45,        30,        90,       100,       100}; //distance/values of until
+	int data1[] = {initSpeed, -initSpeed, initSpeed, initSpeed,  0        , initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed}; // left speed
+	int data2[] = {initSpeed,  0        , initSpeed, initSpeed, -initSpeed, initSpeed, initSpeed, 0        , initSpeed, 0        , initSpeed, initSpeed}; // right speed
+	int data3[] = {0        ,1          ,2         ,0         ,1          ,2         ,0         ,1         , 2        ,1         ,0         ,0         }; // mode, see thing on top
 
 	int data4len = 3;
 	int data4[] = {2, 5, 8}; //sub-instruction groups (correspond to break of infrared)
 	int data5[] = {6, 6, 0}; // length of sub-instruction group
 
-	int data0x[] = {-10, 90, -20, 0, 180, 100                                   , -10        , 90       , -30       , 0, 180      , 100}; //sub-instruction data0
-	int data1x[] = {-initSpeed, 000000000, -initSpeed, 0, 000000000, initSpeed*2, -initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2}; //sub-instruction data1
+	int data0x[] = {-10       ,90        , -20       , 0, 180      , 100        , -10       , 90       , -30       , 0, 180      , 100        }; //sub-instruction data0
+	int data1x[] = {-initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2, -initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2}; //sub-instruction data1
 	int data2x[] = {-initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2, -initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2}; //sub-instruction data2
-	int data3x[] = {0, 1, 0, 4, 1, 0                                            , 0         , 1        , 0         , 4, 1        , 0}; //sub-instruction data3
+	int data3x[] = {0         ,1         ,0          ,4 , 1        , 0          , 0         , 1        , 0         , 4, 1        , 0          }; //sub-instruction data3
 
 	/*int leftSpeed
 	motor[leftWheel] = -leftSpeed;

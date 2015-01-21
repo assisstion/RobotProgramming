@@ -155,11 +155,36 @@ task main() {
 				motor[pulley2] = maxSpeed ;
 			}
 			else{
-				motor[pulley1] = 0;
-				motor[pulley2] = 0;
+				if(joy2Btn(5) == 1){
+				  	motor[pulley1] = maxSpeed;
+				}
+				else if(joy2Btn(7) == 1){
+				   	motor[pulley1] = -maxSpeed;
+				}
+				else{
+						motor[pulley1] = 0;
+				}
+
+				if(joy2Btn(6) == 1){
+					motor[pulley2] = -maxSpeed;
+				}
+				else if(joy2Btn(8) == 1){
+					motor[pulley2] = maxSpeed ;
+				}
+				else{
+					motor[pulley2] = 0;
+				}
 			}
 
-
+			if(joy2Btn(2) == 1){
+				motor[irArm] = 5;
+			}
+			else if(joy2Btn(3) == 1){
+				motor[irArm] = -5;
+			}
+			else{
+				motor[irArm] = 0;
+			}
 			if(joy1Btn(4) == 1){
 				//if(servo[servo1] < 255){
 				//	servo[servo1] = servo[servo1] + 1;
