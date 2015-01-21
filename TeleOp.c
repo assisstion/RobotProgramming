@@ -1,6 +1,5 @@
 #pragma config(Hubs,  S4, HTMotor,  HTMotor,  HTMotor,  HTServo)
-#pragma config(Sensor, S1,     irSensor,       sensorAnalog)
-#pragma config(Sensor, S4,     ,               sensorI2CMuxController)
+#pragma config(Sensor, S3,     HTIRS2,         sensorI2CCustom)
 #pragma config(Motor,  motorA,          irArm,         tmotorNXT, PIDControl, encoder)
 #pragma config(Motor,  motorB,           ,             tmotorNXT, openLoop)
 #pragma config(Motor,  motorC,           ,             tmotorNXT, openLoop)
@@ -42,6 +41,7 @@
 */
 
 #include "JoystickDriver.c"
+#include "hitechnic-irseeker-v2.h"
 
 const int minSpeed = 5;
 const int maxSpeed = 100;
@@ -88,6 +88,9 @@ task main() {
 		short basej1_y2 = joystick.joy1_y2;
 		short basej1_y1 = joystick.joy1_y1;
 
+		short basej2_y2 = joystick.joy2_y2;
+		short basej2_y1 = joystick.joy2_y1;
+
 		servo[Lock] = 0;
 		servo[servo2] = 140;
 
@@ -96,6 +99,9 @@ task main() {
 
 			int y2 = (joystick.joy1_y2 - basej1_y2);
 			int y1 = (joystick.joy1_y1 - basej1_y1);
+
+			int y2x = (joystick.joy2_y2 - basej2_y2);
+			int y1x = (joystick.joy2_y1 - basej2_y1);
 
 			int rightSpeed = getWheelSpeed(y2);
 			int leftSpeed = getWheelSpeed(y1);
@@ -207,6 +213,16 @@ task main() {
 			if(joy1Btn(3) == 0){
 				holderDown = false;
 			}
+			int ac1, ac2, ac3, ac4, ac5 = 0;
+			int acx=0;
+	HTIRS2readAllACStrength(HTIRS2, ac1, ac2, ac3, ac4, ac5);
+	nxtDisplayTextLine(0, "%d", ac1);
+	nxtDisplayTextLine(1, "%d", ac2);
+	nxtDisplayTextLine(2, "%d", ac3);
+	nxtDisplayTextLine(3, "%d", ac4);
+	nxtDisplayTextLine(4, "%d", ac5);
+	acx = HTIRS2readACDir(HTIRS2);
+	nxtDisplayTextLine(5, "%d", acx);
 		}
 }
 

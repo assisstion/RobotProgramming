@@ -170,24 +170,24 @@ task main() {
 	* 3: distance sensor
 	* 4: dump ball
 	*/
-	int encoder = 0;
+	//int encoder = 0;
 	int initSpeed = 40;
-	double arc = 0.6623;
+	//double arc = 0.6623;
 
-	int data0len = 10;
-	int data0[] = {80, -90, 50, -45,75,45,30,90,100,100}; //distance/values of until
-	int data1[] = {initSpeed,		-initSpeed, initSpeed, 000000000, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed}; // left speed
-	int data2[] = {initSpeed,    000000000, initSpeed, -initSpeed, initSpeed, 000000000, initSpeed, 000000000, initSpeed, initSpeed}; // right speed
-	int data3[] = {0, 1, 2, 1, 2, 1, 2, 1, 0, 0}; // mode, see thing on top
+	int data0len = 12;
+	int data0[] = {80,        -90,        40,        40,         -45,        37,       37,        45,        30,        90,        100,       100}; //distance/values of until
+	int data1[] = {initSpeed, -initSpeed, initSpeed, initSpeed,  000000000, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed}; // left speed
+	int data2[] = {initSpeed,  000000000, initSpeed, initSpeed, -initSpeed, initSpeed, initSpeed, 000000000, initSpeed, 000000000, initSpeed, initSpeed}; // right speed
+	int data3[] = {0,          1,         2,         0,          1,         2,         0,         1,         2,         1,         0,         0}; // mode, see thing on top
 
 	int data4len = 3;
-	int data4[] = {2, 4, 6}; //sub-instruction groups (correspond to break of infrared)
-	int data5[] = {6, 0, 0}; // length of sub-instruction group
+	int data4[] = {2, 5, 8}; //sub-instruction groups (correspond to break of infrared)
+	int data5[] = {6, 6, 0}; // length of sub-instruction group
 
-	int data0x[] = {-10, 90, -20, 0, 180, 100}; //sub-instruction data0
-	int data1x[] = {-initSpeed, 000000000, -initSpeed, 0, 000000000, initSpeed*2}; //sub-instruction data1
-	int data2x[] = {-initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2}; //sub-instruction data2
-	int data3x[] = {0, 1, 0, 4, 1, 0}; //sub-instruction data3
+	int data0x[] = {-10, 90, -20, 0, 180, 100                                   , -10        , 90       , -30       , 0, 180      , 100}; //sub-instruction data0
+	int data1x[] = {-initSpeed, 000000000, -initSpeed, 0, 000000000, initSpeed*2, -initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2}; //sub-instruction data1
+	int data2x[] = {-initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2, -initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2}; //sub-instruction data2
+	int data3x[] = {0, 1, 0, 4, 1, 0                                            , 0         , 1        , 0         , 4, 1        , 0}; //sub-instruction data3
 
 	/*int leftSpeed
 	motor[leftWheel] = -leftSpeed;
@@ -239,7 +239,7 @@ task main() {
 			if(travelDistance(data1[i], data2[i], data0[i], 2, false)){
 				motor[leftWheel] = 0;
 				motor[rightWheel] = 0;
-				wait1Msec(2000);
+				wait1Msec(1000);
 				break;
 			}
 		}
@@ -251,7 +251,7 @@ task main() {
 		}
 		motor[leftWheel] = 0;
 		motor[rightWheel] = 0;
-		wait1Msec(2000);
+		wait1Msec(1000);
 	}
 
 	int totalLen = 0;
@@ -295,7 +295,7 @@ task main() {
 		}
 		motor[leftWheel] = 0;
 		motor[rightWheel] = 0;
-		wait1Msec(2000);
+		wait1Msec(1000);
 	}
 	nxtDisplayTextLine(0, "%d", 1);
 	nxtDisplayTextLine(1, "%d", nMotorEncoder[leftWheel]);
