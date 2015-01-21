@@ -81,7 +81,8 @@ bool travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, boo
 	//motor[rightWheel] = 0;
 
 	//while(nMotorRunState[leftWheel] != runStateIdle && nMotorRunState[rightWheel] != runStateIdle){
-	float constant = 1.16;
+	//float constant = 1.16;
+	float constant = 1.10;
 	if(!trueValue){
 		constant = 1120/wheelCircum;
 	}
@@ -127,6 +128,10 @@ int irRead(){
 
 
 task main() {
+	//turn(45, 40, false);
+//}
+
+//void run(){
 	/*int acx = 0;
 	int ac1, ac2, ac3, ac4, ac5 = 0;
 	while(true){
@@ -143,7 +148,7 @@ task main() {
 	}*/
 	wait1Msec(1000);
 	motor[irArm] = 10;
-	wait1Msec(830);
+	wait1Msec(800);
 	motor[irArm] = 0;
 
 	/*
@@ -179,19 +184,19 @@ task main() {
 	//double arc = 0.6623;
 
 	int data0len = 12;
-	int data0[] = {80       ,        -90,        40,        40,        -45,        37,        37,        45,        30,        90,       100,       100}; //distance/values of until
+	int data0[] = {80       ,        -90,        40,        40,        -45,        45,        30,        45,        30,        90,       100,       100}; //distance/values of until
 	int data1[] = {initSpeed, -initSpeed, initSpeed, initSpeed,  0        , initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed}; // left speed
 	int data2[] = {initSpeed,  0        , initSpeed, initSpeed, -initSpeed, initSpeed, initSpeed, 0        , initSpeed, 0        , initSpeed, initSpeed}; // right speed
 	int data3[] = {0        ,1          ,2         ,0         ,1          ,2         ,0         ,1         , 2        ,1         ,0         ,0         }; // mode, see thing on top
 
 	int data4len = 3;
 	int data4[] = {2, 5, 8}; //sub-instruction groups (correspond to break of infrared)
-	int data5[] = {6, 6, 0}; // length of sub-instruction group
+	int data5[] = {6, 6, 6}; // length of sub-instruction group
 
-	int data0x[] = {-10       ,90        , -20       , 0, 180      , 100        , -10       , 90       , -30       , 0, 180      , 100        }; //sub-instruction data0
-	int data1x[] = {-initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2, -initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2}; //sub-instruction data1
-	int data2x[] = {-initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2, -initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2}; //sub-instruction data2
-	int data3x[] = {0         ,1         ,0          ,4 , 1        , 0          , 0         , 1        , 0         , 4, 1        , 0          }; //sub-instruction data3
+	int data0x[] = {-10       ,90        , -25       , 0, 180      , 100        , -10       , 90       , -25       , 0, 180      , 100        , -12       , 90       , -40       , 0, 180      , 100};         //sub-instruction data0
+	int data1x[] = {-initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2, -initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2, -initSpeed, 0        , -initSpeed, 0, 0        , initSpeed*2}; //sub-instruction data1
+	int data2x[] = {-initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2, -initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2, -initSpeed, initSpeed, -initSpeed, 0, initSpeed, initSpeed*2}; //sub-instruction data2
+	int data3x[] = {0         ,1         , 0          ,4 , 1        , 0          , 0         , 1        , 0         , 4, 1        , 0          , 0         , 1        , 0         , 4, 1        , 0};           //sub-instruction data3
 
 	/*int leftSpeed
 	motor[leftWheel] = -leftSpeed;
@@ -263,6 +268,7 @@ task main() {
 	for(int j = 0; j < data4len; j++){
 		if(data4[j] == i){
 				insLen = data5[j];
+				break;
 		}
 		else{
 			totalLen += data5[j];
@@ -272,6 +278,7 @@ task main() {
 
 
 	for(int k = totalLen; k < totalLen + insLen; k++){
+		nxtDisplayTextLine(5, "%d", k);
 		if(data3x[k] == 0){
 			travelDistance(data1x[k], data2x[k], data0x[k], 0, false);
 		}
