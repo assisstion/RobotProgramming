@@ -151,13 +151,13 @@ task main() {
 			else{
 				motor[irArm] = 0;
 			}
-			if(joy1Btn(4) == 1){
+			if(joy1Btn(1) == 1){
 			servo[Center] = 70;
 			}
-			else if(joy1Btn(1) == 1){
+			else if(joy1Btn(4) == 1){
 			servo[Center] = 125;
 			}
-			if(!lockDown && joy1Btn(2) == 1){
+			if(!lockDown && joy1Btn(3) == 1){
 					lockOn = !lockOn;
 					if(lockOn){
 						servo[Lock] = 190;
@@ -167,10 +167,10 @@ task main() {
 					}
 					lockDown = true;
 			}
-			if(joy1Btn(2) == 0){
+			if(joy1Btn(3) == 0){
 				lockDown = false;
 			}
-			if(!holderDown && joy1Btn(3) == 1){
+			if(!holderDown && joy1Btn(2) == 1){
 					holderOpen = !holderOpen;
 					if(holderOpen){
 						servo[servo2] = 180;
@@ -180,7 +180,7 @@ task main() {
 					}
 					holderDown = true;
 			}
-			if(joy1Btn(3) == 0){
+			if(joy1Btn(2) == 0){
 				holderDown = false;
 			}
 			int ac1, ac2, ac3, ac4, ac5 = 0;

@@ -226,7 +226,7 @@ task main() {
 	int data4[] = {2, 5, 8}; //sub-instruction groups (correspond to break of infrared)
 	int data5[] = {6, 6, 6}; // length of sub-instruction group
 
-	int data0x[] = {-16       ,90        , -5       , 4400, 180      , 100        , -10       , 90       , -25       , 4400, 180      , 100        , -12       , 90       , -40       , 4400, 180      , 100};         //sub-instruction data0
+	int data0x[] = {-16       ,90        , -0       , 4400, 180      , 100        , -20       , 90       , -5       , 4400, 180      , 100        , -12       , 90       , -40       , 4400, 180      , 100};         //sub-instruction data0
 	int data1x[] = {-initSpeed, 0        , -initSpeed, 2640, 0        , initSpeed*2, -initSpeed, 0        , -initSpeed, 2640, 0        , initSpeed*2, -initSpeed, 0        , -initSpeed, 2640, 0        , initSpeed*2}; //sub-instruction data1
 	int data2x[] = {-initSpeed, initSpeed, -initSpeed, 0   , initSpeed, initSpeed*2, -initSpeed, initSpeed, -initSpeed, 0   , initSpeed, initSpeed*2, -initSpeed, initSpeed, -initSpeed, 0   , initSpeed, initSpeed*2}; //sub-instruction data2
 	int data3x[] = {0         ,1         , 0          ,4   , 1        , 0          , 0         , 1        , 0         , 4   , 1        , 0          , 0         , 1        , 0         , 4   , 1        , 0};           //sub-instruction data3
@@ -336,15 +336,15 @@ task main() {
 		}
 		else if(data3x[k] == 4){
 			raise(data0x[k], true);
-			travelDistance(-initSpeed/2, -initSpeed/2, -8, 0, false);
-			wait1Msec(500);
+			travelDistance(-initSpeed/2, -initSpeed/2, -12, 0, false);
 			motor[leftWheel] = 0;
 			motor[rightWheel] = 0;
-			servo[servo2] = 0;
-			wait1Msec(1000);
-			servo[servo2] = 180;
 			wait1Msec(500);
-			travelDistance(initSpeed/2, initSpeed/2, 8, 0, false);
+			servo[servo2] = 0;
+			wait1Msec(2500);
+			//servo[servo2] = 180;
+			//wait1Msec(500);
+			travelDistance(initSpeed/2, initSpeed/2, 12, 0, false);
 			motor[leftWheel] = 0;
 			motor[rightWheel] = 0;
 			wait1Msec(500);
