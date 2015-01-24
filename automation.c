@@ -26,33 +26,23 @@
  */
 
 #include "hitechnic-irseeker-v2.h"
-#include "JoystickDriver.c"
+//#include "JoystickDriver.c" //unnecessary include
 
-const int minSpeed = 5;
 const int maxSpeed = 100;
 
-const int wheelDist = 32.5;
+//const int wheelDist = 32.5; //unused distance between wheels
 
 const int irRegion = 5;
 
 const float wheelCircum = 31.415926;
 
-#include "JoystickDriver.c"
-
-
-float absSqrt(float input){
-	if(input < 0){
-		return -sqrt(-input);
-	}
-	else{
-		return sqrt(input);
-	}
-}
-
 /*
+* Finds the direction given by the IR Detector
+* returns{
 * 0: false
 * 1: true
 * -1: error
+* }
 */
 int irFound(int value){
 	int _dirAC = HTIRS2readACDir(HTIRS2);
@@ -67,20 +57,43 @@ int irFound(int value){
 	}
 }
 
+/*
+* Travels a set amount of distance, based on encoder rotations
+* Note that this method does not stop the robot before returning
+* LeftValues{
+* leftSpeed: speed the left wheel motor moves at (-100 to 100)
+* rightSpeed: speed the right wheel motor moves at (-100 to 100)
+* distance: distance to travel in centimeters (negative value for going backwards, positive for going forwards)
+* parameter: {
+* 0: regular travelling
+* 1: unused
+* 2: stop on infrared detection
+* }
+* trueValue: if true, distance is measured in encoder value instead of distance
+* }
+* returns: true if the IR beacon is in detection, false otherwise
+*/
 bool travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, bool trueValue){
+	//Sets the encoder values to 0
 	nMotorEncoder[leftWheel] = 0;
 	nMotorEncoder[rightWheel] = 0;
 
+	//Sets the speed
 	motor[leftWheel] = -leftSpeed;
 	motor[rightWheel] = rightSpeed;
 
+	//Constant for adjusting distance (to account for various real life factors)
 	float constant = 1.05; //old: 1.10, 1.16
 	if(!trueValue){
+		//Using encoder values instead
 		constant = 1120/wheelCircum;
 	}
+	//Forward movement
 	if(distance >= 0){
+		//Run until encoder reaches value or, in the case of IR detection (mode 2), IR beacon found
 		while((mode != 2 || irFound(irRegion) != 1) && -1*nMotorEncoder[leftWheel] < distance*constant
 			&& nMotorEncoder[rightWheel] < distance*constant){
+				//Prints debug information
 			nxtDisplayTextLine(0, "%d", motor[leftWheel]);
 			nxtDisplayTextLine(1, "%d", motor[rightWheel]);
 			nxtDisplayTextLine(2, "%d", nMotorEncoder[leftWheel]);
@@ -88,9 +101,12 @@ bool travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, boo
 			nxtDisplayTextLine(4, "%d", distance*constant);
 		}
 	}
+	//Backward movement
 	else{
-		while((mode != 2 || irFound(irRegion) != 1) && nMotorEncoder[leftWheel]  < -1*distance*constant
+		//Run until encoder reaches value or, in the case of IR detection (mode 2), IR beacon found
+		while((mode != 2 || irFound(irRegion) != 1) && nMotorEncoder[leftWheel] < -1*distance*constant
 			&& -1*nMotorEncoder[rightWheel] < -1*distance*constant){
+				//Prints debug information
 			nxtDisplayTextLine(0, "%d", motor[leftWheel]);
 			nxtDisplayTextLine(1, "%d", motor[rightWheel]);
 			nxtDisplayTextLine(2, "%d", nMotorEncoder[leftWheel]);
@@ -98,72 +114,103 @@ bool travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, boo
 			nxtDisplayTextLine(4, "%d", distance*constant);
 		}
 	}
+	//Returns if the IR beacon was found
 	return irFound(irRegion) == 1;
 }
 
-void turn(float degrees, int speed, bool direction){
-	//true = left, false = right
+/*
+* Turn a set number of degrees; As a pivotal rotation, one wheel turns, while the other wheel remains in place
+* LeftValues{
+* degrees: the number of degrees to turn
+* speed: the speed of the turning wheel
+* direction{
+* true: turn left (right wheel on)
+* false: turn right (left wheel on)
+* }
+* }
+*/
+void turn(float degrees, int turnSpeed, bool direction){
+	//Calculates distance to turn
+	//Based on encoder with 1120 pulses per rotation
 	float dist = 3.14*2*4550*degrees/1413;
 
+	//Turns differently based on left or right
 	if(direction){
-		travelDistance(0, speed*2, dist, false, true);
+		travelDistance(0, turnSpeed*2, dist, false, true);
 		}else{
-		travelDistance(speed*2, 0, dist, false, true);
+		travelDistance(turnSpeed*2, 0, dist, false, true);
 	}
 }
 
+/*
+* Raises or lowers the vertical lift
+* Note that lowering is affected by gravity, and therefore much faster
+* The ms leftValue should be experimentally decided to raise and lower into optional positions
+* LeftValues{
+* ms: the number of milliseconds to raise or lower the vertical lift
+* up{
+* true: raise the vertical lift upwards
+* false: lower the vertical lift downwards
+* }
+* }
+*/
 void raise(int ms, bool up){
 	if(up){
+		//Sets the center servo to the up position
 		servo[Center] = 125;
 		wait1Msec(500);
+		//Raises the pulleys
 		motor[pulley1] = maxSpeed;
 		motor[pulley2] = -maxSpeed;
 	}
 	else{
+		//Sets the center servo to the up position
 		servo[Center] = 125;
+		//Lowers the pulleys
 		motor[pulley1] = -maxSpeed;
 		motor[pulley2] = maxSpeed;
 	}
 	wait1Msec(ms);
+	//Stops the pulleys
 	motor[pulley1] = 0;
 	motor[pulley2] = 0;
+	//If lowering, lowers the center servo
 	if(!up){
 		servo[Center] = 70;
 	}
 }
 
 
-int irRead(){
-	return HTIRS2readACDir(HTIRS2);
-}
+	/*
+	* mode{
+	* 0: not turning / arc
+	* 1: turning
+	* 2: until infrared
+	* 3: distance sensor
+	* 4: dump ball
+	* }
+	*/
+const int speed = 40;
 
+int parameterlen = 12;
+int parameter[] = {80 , -90, 40, 40, -45, 45, 30, 45, 30, 90, 100, 100}; //distance/values of until
+int leftValue[] = {speed, -speed, speed, speed, 0 , speed, speed, speed, speed, speed, speed, speed}; // left speed
+int rightValue[] = {speed, 0 , speed, speed, -speed, speed, speed, 0 , speed, 0 , speed, speed}; // right speed
+int mode[] = {0 ,1 ,2 ,0 ,1 ,2 ,0 ,1 , 2 ,1 ,0 ,0 }; // parameter, see thing on top
+
+int brancheslen = 3;
+int branches[] = {2, 5, 8}; //sub-instruction groups (correspond to break of infrared)
+int branchLength[] = {6, 6, 6}; // length of sub-instruction group
+
+int branchParameter[] = {-16 ,90 , -0 , 4400, 180 , 200 , -22 , 90 , -0 , 4400, 180 , 200 , -16 , 87 , -10 , 4400, 175 , 200}; //sub-instruction parameter
+int branchLeftValue[] = {-speed, 0 , -speed, 2500, 0 , speed*3, -speed, 0 , -speed, 2500, 0 , speed*3, -speed, 0 , -speed, 2500, 0 , speed*3}; //sub-instruction leftValue
+int branchRightValue[] = {-speed, speed, -speed, 12 , speed, speed*3, -speed, speed, -speed, 17 , speed, speed*3, -speed, speed, -speed, 15 , speed, speed*3}; //sub-instruction rightValue
+int branchMode[] = {0 ,1 , 0 ,4 , 1 , 0 , 0 , 1 , 0 , 4 , 1 , 0 , 0 , 1 , 0 , 4 , 1 , 0}; //sub-instruction mode
 
 
 task main() {
 	//waitForStart(); //Enable for competition
 
-	//raise(4400, true);
-	//wait1Msec(1000);
-	//raise(2640, false);
-	//wait1Msec(1000);
-	//turn(45, 40, false);
-//}
-
-//void run(){
-	/*int acx = 0;
-	int ac1, ac2, ac3, ac4, ac5 = 0;
-	while(true){
-	HTIRS2readAllACStrength(HTIRS2, ac1, ac2, ac3, ac4, ac5);
-	nxtDisplayTextLine(0, "%d", ac1);
-	nxtDisplayTextLine(1, "%d", ac2);
-	nxtDisplayTextLine(2, "%d", ac3);
-	nxtDisplayTextLine(3, "%d", ac4);
-	nxtDisplayTextLine(4, "%d", ac5);
-	acx = HTIRS2readACDir(HTIRS2);
-	nxtDisplayTextLine(5, "%d", acx);
-	wait1Msec(1000);
-	}
-	}*/
 	servo[servo2] = 180;
 	servo[Center] = 70;
 	wait1Msec(1000);
@@ -176,10 +223,11 @@ task main() {
 	motor[irArm] = 0;
 	//motor[irArm] = 10;
 	wait1Msec(795);
-	motor[irArm] = 0;
+	//motor[irArm] = 0;
 
-	short basej1_y2 = joystick.joy1_y2;
-	short basej1_y1 = joystick.joy1_y1;
+	//short basej1_y2 = joystick.joy1_y2;
+	//short basej1_y1 = joystick.joy1_y1;
+
 
 	/*
 	* 0: not turning / arc
@@ -188,69 +236,52 @@ task main() {
 	* 3: distance sensor
 	* 4: dump ball
 	*/
-	int initSpeed = 40;
-
-	int data0len = 12;
-	int data0[] = {80       ,        -90,        40,        40,        -45,        45,        30,        45,        30,        90,       100,       100}; //distance/values of until
-	int data1[] = {initSpeed, -initSpeed, initSpeed, initSpeed,  0        , initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed, initSpeed}; // left speed
-	int data2[] = {initSpeed,  0        , initSpeed, initSpeed, -initSpeed, initSpeed, initSpeed, 0        , initSpeed, 0        , initSpeed, initSpeed}; // right speed
-	int data3[] = {0        ,1          ,2         ,0         ,1          ,2         ,0         ,1         , 2        ,1         ,0         ,0         }; // mode, see thing on top
-
-	int data4len = 3;
-	int data4[] = {2, 5, 8}; //sub-instruction groups (correspond to break of infrared)
-	int data5[] = {6, 6, 6}; // length of sub-instruction group
-
-	int data0x[] = {-16       ,90        , -0       , 4400, 180      , 200        , -22       , 90       , -0       , 4400, 180      , 200        , -16       , 87       , -10       , 4400, 175      , 200};         //sub-instruction data0
-	int data1x[] = {-initSpeed, 0        , -initSpeed, 2500, 0        , initSpeed*3, -initSpeed, 0        , -initSpeed, 2500, 0        , initSpeed*3, -initSpeed, 0        , -initSpeed, 2500, 0        , initSpeed*3}; //sub-instruction data1
-	int data2x[] = {-initSpeed, initSpeed, -initSpeed, 12   , initSpeed, initSpeed*3, -initSpeed, initSpeed, -initSpeed, 17   , initSpeed, initSpeed*3, -initSpeed, initSpeed, -initSpeed, 15   , initSpeed, initSpeed*3}; //sub-instruction data2
-	int data3x[] = {0         ,1         , 0          ,4   , 1        , 0          , 0         , 1        , 0         , 4   , 1        , 0          , 0         , 1        , 0         , 4   , 1        , 0};           //sub-instruction data3
-
 	int i = 0;
 
-	for(; i < data0len; i++){
+	for(; i < parameterlen; i++){
 
-		if(data3[i] == 0){
-			travelDistance(data1[i], data2[i], data0[i], 0, false);
+		if(mode[i] == 0){
+			travelDistance(leftValue[i], rightValue[i], parameter[i], 0, false);
 		}
-		else if(data3[i] == 1){
-			if(data1[i] == 0 && data2[i] != 0){
-				turn(data0[i], data2[i], true);
+		else if(mode[i] == 1){
+			if(leftValue[i] == 0 && rightValue[i] != 0){
+				turn(parameter[i], rightValue[i], true);
 			}
-			else if(data1[i] !=0 && data2[i] == 0){
-				turn(data0[i], data1[i], false);
+			else if(leftValue[i] !=0 && rightValue[i] == 0){
+				turn(parameter[i], leftValue[i], false);
 			}
 			else{
 				//print("Error in data[][]...");
 			}
 		}
-		else if(data3[i] == 2){
-			if(travelDistance(data1[i], data2[i], data0[i], 2, false)){
+		else if(mode[i] == 2){
+			if(travelDistance(leftValue[i], rightValue[i], parameter[i], 2, false)){
 				motor[leftWheel] = 0;
 				motor[rightWheel] = 0;
-				wait1Msec(1000);
+				wait1Msec(500);
 				break;
 			}
 		}
-		else if(data3[i] == 3){
-			travelDistance(data1[i], data2[i], data0[i], 3, false);
+		else if(mode[i] == 3){
+			travelDistance(leftValue[i], rightValue[i], parameter[i], 3, false);
 		}
-		else if(data3[i] == 4){
-			wait1Msec(1000);
+		else if(mode[i] == 4){
+			wait1Msec(500);
 		}
 		motor[leftWheel] = 0;
 		motor[rightWheel] = 0;
-		wait1Msec(1000);
+		wait1Msec(500);
 	}
 
 	int totalLen = 0;
 	int insLen = 0;
-	for(int j = 0; j < data4len; j++){
-		if(data4[j] == i){
-				insLen = data5[j];
+	for(int j = 0; j < brancheslen; j++){
+		if(branches[j] == i){
+				insLen = branchLength[j];
 				break;
 		}
 		else{
-			totalLen += data5[j];
+			totalLen += branchLength[j];
 		}
 	}
 
@@ -258,31 +289,31 @@ task main() {
 
 	for(int k = totalLen; k < totalLen + insLen; k++){
 		nxtDisplayTextLine(5, "%d", k);
-		if(data3x[k] == 0){
-			travelDistance(data1x[k], data2x[k], data0x[k], 0, false);
+		if(branchMode[k] == 0){
+			travelDistance(branchLeftValue[k], branchRightValue[k], branchParameter[k], 0, false);
 		}
-		else if(data3x[k] == 1){
-			if(data1x[k] == 0 && data2x[k] != 0){
-				turn(data0x[k], data2x[k], true);
+		else if(branchMode[k] == 1){
+			if(branchLeftValue[k] == 0 && branchRightValue[k] != 0){
+				turn(branchParameter[k], branchRightValue[k], true);
 			}
-			else if(data1x[k] !=0 && data2x[k] == 0){
-				turn(data0x[k], data1x[k], false);
+			else if(branchLeftValue[k] !=0 && branchRightValue[k] == 0){
+				turn(branchParameter[k], branchLeftValue[k], false);
 			}
 			else{
 				//print("Error in data[][]...");
 			}
 		}
-		else if(data3x[k] == 2){
-			if(travelDistance(data1x[k], data2x[k], data0x[k], 2, false)){
+		else if(branchMode[k] == 2){
+			if(travelDistance(branchLeftValue[k], branchRightValue[k], branchParameter[k], 2, false)){
 				break;
 			}
 		}
-		else if(data3x[k] == 3){
-			travelDistance(data1x[k], data2x[k], data0x[k], 3, false);
+		else if(branchMode[k] == 3){
+			travelDistance(branchLeftValue[k], branchRightValue[k], branchParameter[k], 3, false);
 		}
-		else if(data3x[k] == 4){
-			raise(data0x[k], true);
-			travelDistance(-initSpeed/2, -initSpeed/2, -data2x[k], 0, false);
+		else if(branchMode[k] == 4){
+			raise(branchParameter[k], true);
+			travelDistance(-speed/2, -speed/2, -branchRightValue[k], 0, false);
 			motor[leftWheel] = 0;
 			motor[rightWheel] = 0;
 			wait1Msec(500);
@@ -290,16 +321,16 @@ task main() {
 			wait1Msec(2500);
 			//servo[servo2] = 180;
 			//wait1Msec(500);
-			travelDistance(initSpeed/2, initSpeed/2, data2x[k], 0, false);
+			travelDistance(speed/2, speed/2, branchRightValue[k], 0, false);
 			motor[leftWheel] = 0;
 			motor[rightWheel] = 0;
 			wait1Msec(500);
-			raise(data1x[k], false);
-			//wait1Msec(1000);
+			raise(branchLeftValue[k], false);
+			//wait1Msec(500);
 		}
 		motor[leftWheel] = 0;
 		motor[rightWheel] = 0;
-		wait1Msec(1000);
+		wait1Msec(500);
 	}
 	nxtDisplayTextLine(0, "%d", 1);
 	nxtDisplayTextLine(1, "%d", nMotorEncoder[leftWheel]);

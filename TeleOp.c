@@ -11,8 +11,8 @@
 #pragma config(Motor,  mtr_S4_C3_1,     motorzzz,      tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S4_C3_2,     collector1,    tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S4_C4_1,    Lock,                 tServoStandard)
-#pragma config(Servo,  srvo_S4_C4_2,    Asshole,              tServoStandard)
-#pragma config(Servo,  srvo_S4_C4_3,    servo3,               tServoNone)f
+#pragma config(Servo,  srvo_S4_C4_2,    servo2,               tServoStandard)
+#pragma config(Servo,  srvo_S4_C4_3,    servo3,               tServoNone)
 #pragma config(Servo,  srvo_S4_C4_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S4_C4_5,    servo5,               tServoNone)
 #pragma config(Servo,  srvo_S4_C4_6,    Center,               tServoStandard)
@@ -27,8 +27,7 @@
  *	Date: 2015
  */
 
-
-#include "JoystickDriver.c"
+//#include "JoystickDriver.c" //unnecessary include
 #include "hitechnic-irseeker-v2.h"
 
 const int minSpeed = 5;
@@ -61,10 +60,6 @@ short getWheelSpeed(int controllerSpeed) {
 			}
 }
 
-int maxServo = 255;
-int minServo = 0;
-
-bool b;
 bool lockOn = false;
 bool lockDown = false;
 bool holderOpen = false;
@@ -76,8 +71,8 @@ task main() {
 		short basej1_y2 = joystick.joy1_y2;
 		short basej1_y1 = joystick.joy1_y1;
 
-		short basej2_y2 = joystick.joy2_y2;
-		short basej2_y1 = joystick.joy2_y1;
+		//short basej2_y2 = joystick.joy2_y2; //unused y positions for controller two
+		//short basej2_y1 = joystick.joy2_y1; //unused y positions for controller two
 
 		servo[Lock] = 0;
 		servo[servo2] = 140;
@@ -88,21 +83,26 @@ task main() {
 			int y2 = (joystick.joy1_y2 - basej1_y2);
 			int y1 = (joystick.joy1_y1 - basej1_y1);
 
-			int y2x = (joystick.joy2_y2 - basej2_y2);
-			int y1x = (joystick.joy2_y1 - basej2_y1);
+			//int y2x = (joystick.joy2_y2 - basej2_y2); //unused y positions for controller two
+			//int y1x = (joystick.joy2_y1 - basej2_y1); //unused y positions for controller two
 
+			//Calculates wheel speed, and sets the whells to that speed
 			int rightSpeed = getWheelSpeed(y2);
 			int leftSpeed = getWheelSpeed(y1);
 
 			rightSpeed = absSqrt(rightSpeed)*10;
 			leftSpeed = absSqrt(leftSpeed)*10;
 
-			//if(joy1Btn(8) == 1){
-			//		rightSpeed = rightSpeed / 2;
-			//		leftSpeed = leftSpeed / 2;
-			//}
+			//unused "slow mode"
+			/*if(joy1Btn(8) == 1){
+					rightSpeed = rightSpeed / 2;
+					leftSpeed = leftSpeed / 2;
+			}*/
+
 			motor[rightWheel] = rightSpeed;
 			motor[leftWheel]  = -leftSpeed;
+
+			//Sweeper control
 			if(joy1Btn(8) == 1){
 				motor[collector1] = maxSpeed*0.5;
 			}
@@ -113,6 +113,7 @@ task main() {
 				motor[collector1] = 0;
 			}
 
+			//Vertical lift control
 			if(joy1Btn(5) == 1){
 				motor[pulley1] = maxSpeed;
 				motor[pulley2] = -maxSpeed;
@@ -122,6 +123,7 @@ task main() {
 				motor[pulley2] = maxSpeed ;
 			}
 			else{
+				//Secondary control vertical list control
 				if(joy2Btn(5) == 1){
 				  	motor[pulley1] = maxSpeed;
 				}
@@ -143,6 +145,7 @@ task main() {
 				}
 			}
 
+			//Secondary controller IR Arm control
 			if(joy2Btn(2) == 1){
 				motor[irArm] = 5;
 			}
@@ -152,12 +155,16 @@ task main() {
 			else{
 				motor[irArm] = 0;
 			}
+
+			//Center servo two-button toggle: (X = lower, Y = raise)
 			if(joy1Btn(1) == 1){
-			servo[Center] = 70;
+				servo[Center] = 70;
 			}
 			else if(joy1Btn(4) == 1){
-			servo[Center] = 125;
+				servo[Center] = 125;
 			}
+
+			//Rolling goal lock one button toggle (B)
 			if(!lockDown && joy1Btn(3) == 1){
 					lockOn = !lockOn;
 					if(lockOn){
@@ -171,6 +178,8 @@ task main() {
 			if(joy1Btn(3) == 0){
 				lockDown = false;
 			}
+
+			//Release one button toggle (A)
 			if(!holderDown && joy1Btn(2) == 1){
 					holderOpen = !holderOpen;
 					if(holderOpen){
@@ -184,15 +193,17 @@ task main() {
 			if(joy1Btn(2) == 0){
 				holderDown = false;
 			}
+
+			//IR Readings debug display
 			int ac1, ac2, ac3, ac4, ac5 = 0;
 			int acx=0;
-	HTIRS2readAllACStrength(HTIRS2, ac1, ac2, ac3, ac4, ac5);
-	nxtDisplayTextLine(0, "%d", ac1);
-	nxtDisplayTextLine(1, "%d", ac2);
-	nxtDisplayTextLine(2, "%d", ac3);
-	nxtDisplayTextLine(3, "%d", ac4);
-	nxtDisplayTextLine(4, "%d", ac5);
-	acx = HTIRS2readACDir(HTIRS2);
-	nxtDisplayTextLine(5, "%d", acx);
+			HTIRS2readAllACStrength(HTIRS2, ac1, ac2, ac3, ac4, ac5);
+			nxtDisplayTextLine(0, "%d", ac1);
+			nxtDisplayTextLine(1, "%d", ac2);
+			nxtDisplayTextLine(2, "%d", ac3);
+			nxtDisplayTextLine(3, "%d", ac4);
+			nxtDisplayTextLine(4, "%d", ac5);
+			acx = HTIRS2readACDir(HTIRS2);
+			nxtDisplayTextLine(5, "%d", acx);
 		}
 }
