@@ -83,7 +83,7 @@ bool travelDistance(int leftSpeed, int rightSpeed, float distance, int mode, boo
 	motor[rightWheel] = rightSpeed;
 
 	//Constant for adjusting distance (to account for various real life factors)
-	float constant = 1.05; //old: 1.10, 1.16
+	float constant = 1.16; //old: 1.10, 1.16
 	if(!trueValue){
 		//Using encoder values instead
 		constant = 1120/wheelCircum;
@@ -158,7 +158,7 @@ void raise(int ms, bool up){
 	if(up){
 		//Sets the center servo to the up position
 		servo[Center] = 125;
-		wait1Msec(500);
+		wait1Msec(200);
 		//Raises the pulleys
 		motor[pulley1] = maxSpeed;
 		motor[pulley2] = -maxSpeed;
@@ -190,14 +190,17 @@ void raise(int ms, bool up){
 	* 4: dump ball
 	* }
 	*/
+//Default speed for movement
 const int speed = 40;
 
+//Length of the parameter array
 int parameterlen = 12;
-int parameter[] = {80 , -90, 40, 40, -45, 45, 30, 45, 30, 90, 100, 100}; //distance/values of until
+int parameter[] = {80 , -90, 40, 40, -45, 45, 30, 45, 30, 90, 100, 100}; //distance/values of until (centimeters for straight, degrees for turn)
 int leftValue[] = {speed, -speed, speed, speed, 0 , speed, speed, speed, speed, speed, speed, speed}; // left speed
 int rightValue[] = {speed, 0 , speed, speed, -speed, speed, speed, 0 , speed, 0 , speed, speed}; // right speed
-int mode[] = {0 ,1 ,2 ,0 ,1 ,2 ,0 ,1 , 2 ,1 ,0 ,0 }; // parameter, see thing on top
+int mode[] = {0 ,1 ,2 ,0 ,1 ,2 ,0 ,1 , 2 ,1 ,0 ,0 }; // see above
 
+//Length of branches array
 int brancheslen = 3;
 int branches[] = {2, 5, 8}; //sub-instruction groups (correspond to break of infrared)
 int branchLength[] = {6, 6, 6}; // length of sub-instruction group
@@ -209,11 +212,12 @@ int branchMode[] = {0 ,1 , 0 ,4 , 1 , 0 , 0 , 1 , 0 , 4 , 1 , 0 , 0 , 1 , 0 , 4 
 
 
 task main() {
-	//waitForStart(); //Enable for competition
+	waitForStart(); //Enable for competition
 
+	//Move servos
 	servo[servo2] = 180;
 	servo[Center] = 70;
-	wait1Msec(1000);
+	//wait1Msec();
 
 	nMotorEncoder[irArm] = 0;
 	motor[irArm] = 40;
@@ -222,7 +226,7 @@ task main() {
 	}
 	motor[irArm] = 0;
 	//motor[irArm] = 10;
-	wait1Msec(795);
+	//wait1Msec(795);
 	//motor[irArm] = 0;
 
 	//short basej1_y2 = joystick.joy1_y2;
@@ -258,7 +262,7 @@ task main() {
 			if(travelDistance(leftValue[i], rightValue[i], parameter[i], 2, false)){
 				motor[leftWheel] = 0;
 				motor[rightWheel] = 0;
-				wait1Msec(500);
+				wait1Msec(200);
 				break;
 			}
 		}
@@ -266,11 +270,11 @@ task main() {
 			travelDistance(leftValue[i], rightValue[i], parameter[i], 3, false);
 		}
 		else if(mode[i] == 4){
-			wait1Msec(500);
+			wait1Msec(200);
 		}
 		motor[leftWheel] = 0;
 		motor[rightWheel] = 0;
-		wait1Msec(500);
+		wait1Msec(200);
 	}
 
 	int totalLen = 0;
@@ -316,21 +320,21 @@ task main() {
 			travelDistance(-speed/2, -speed/2, -branchRightValue[k], 0, false);
 			motor[leftWheel] = 0;
 			motor[rightWheel] = 0;
-			wait1Msec(500);
+			wait1Msec(200);
 			servo[servo2] = 0;
 			wait1Msec(2500);
 			//servo[servo2] = 180;
-			//wait1Msec(500);
+			//wait1Msec(200);
 			travelDistance(speed/2, speed/2, branchRightValue[k], 0, false);
 			motor[leftWheel] = 0;
 			motor[rightWheel] = 0;
-			wait1Msec(500);
+			wait1Msec(200);
 			raise(branchLeftValue[k], false);
-			//wait1Msec(500);
+			//wait1Msec(200);
 		}
 		motor[leftWheel] = 0;
 		motor[rightWheel] = 0;
-		wait1Msec(500);
+		wait1Msec(200);
 	}
 	nxtDisplayTextLine(0, "%d", 1);
 	nxtDisplayTextLine(1, "%d", nMotorEncoder[leftWheel]);

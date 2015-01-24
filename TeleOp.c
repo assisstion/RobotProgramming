@@ -66,7 +66,7 @@ bool holderOpen = false;
 bool holderDown = false;
 
 task main() {
-		//waitForStart(); //Enable for competition
+		waitForStart(); //Enable for competition
 
 		short basej1_y2 = joystick.joy1_y2;
 		short basej1_y1 = joystick.joy1_y1;
@@ -163,6 +163,9 @@ task main() {
 			else if(joy1Btn(4) == 1){
 				servo[Center] = 125;
 			}
+			else if(joy1Btn(9) == 1){
+				servo[Center] = 100;
+			}
 
 			//Rolling goal lock one button toggle (B)
 			if(!lockDown && joy1Btn(3) == 1){
@@ -183,7 +186,7 @@ task main() {
 			if(!holderDown && joy1Btn(2) == 1){
 					holderOpen = !holderOpen;
 					if(holderOpen){
-						servo[servo2] = 180;
+						servo[servo2] = 250;
 					}
 					else{
 						servo[servo2] = 140;
